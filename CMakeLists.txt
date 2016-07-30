@@ -75,7 +75,7 @@ get_directory_property(defs COMPILE_DEFINITIONS)
 
 # EXTERNAL DEPENDENCIES
 include(ExternalProject)
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+#list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include_directories(${CMAKE_BINARY_DIR}/include)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
