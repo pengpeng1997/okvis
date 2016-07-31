@@ -10,14 +10,14 @@ set(OKVIS_VERSION
 
 # options for build configuration
 option (USE_SYSTEM_BRISK
-        "Use brisk via find_package rather than downloading it as part of okvis" OFF) 
+        "Use brisk via find_package rather than downloading it as part of okvis" ON) 
 option (USE_SYSTEM_CERES
-        "Use ceres via find_package rather than downloading it as part of okvis" OFF) 
+        "Use ceres via find_package rather than downloading it as part of okvis" ON) 
 option (BUILD_APPS
         "Builds a demo app (which requires boost)" ON) 
 option (BUILD_TESTS
         "Builds all gtests" OFF) 
-SET(N_CORES 3 CACHE STRING "Using N number of cores for parallel build")
+SET(N_CORES 1 CACHE STRING "Using N number of cores for parallel build")
 
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
@@ -206,6 +206,10 @@ else()
   install(DIRECTORY ${CMAKE_BINARY_DIR}/share/Ceres/
     DESTINATION ${CMAKE_INSTALL_PREFIX}/share/Ceres/)
 endif()
+
+#OpenCV
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 # OpenGV
 set(CMAKE_CXX_FLAGS_WSUPPRESS 
