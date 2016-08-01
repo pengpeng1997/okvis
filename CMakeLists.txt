@@ -140,7 +140,6 @@ endif()
 find_package(SuiteSparse REQUIRED QUIET) #will be needed in any case...
 find_package(CXSparse QUIET) #optional
 if(${USE_SYSTEM_CERES})
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
   find_package( Ceres 1.9 REQUIRED )
   include_directories(BEFORE ${CERES_INCLUDE_DIRS})
   message(STATUS "Using system Ceres.")
@@ -206,6 +205,14 @@ else()
   install(DIRECTORY ${CMAKE_BINARY_DIR}/share/Ceres/
     DESTINATION ${CMAKE_INSTALL_PREFIX}/share/Ceres/)
 endif()
+
+find_package(OpenMP REQUIRED)
+if (OPENMP_FOUND)
+  message(STATUS "OpenMP found")
+  add_definitions(-DUSE_OPENMP)
+else ()
+  message(STATUS "OpenMP NOT found")
+endif ()
 
 #OpenCV
 find_package(OpenCV REQUIRED)
@@ -334,6 +341,7 @@ if(BUILD_APPS)
     okvis_multisensor_processing
     pthread 
     ${Boost_LIBRARIES}
+    ${CXSPARSE_LIBRARIES}    
   )
   if(${VISENSORDRIVER_FOUND})
     target_link_libraries(okvis_app_synchronous ${VISensorDriver_LIBRARY})

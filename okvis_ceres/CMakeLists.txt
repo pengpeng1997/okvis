@@ -26,6 +26,7 @@ add_library(${PROJECT_NAME}
   include/okvis/ceres/CeresIterationCallback.hpp
 )
 
+message("OKVIS CERES *************** CERES_LIBRARIES = ${CERES_LIBRARIES} ")
 # and link it
 target_link_libraries(${PROJECT_NAME} 
   PUBLIC okvis_util
