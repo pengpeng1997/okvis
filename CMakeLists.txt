@@ -328,6 +328,7 @@ if(BUILD_APPS)
   FIND_PACKAGE(Boost COMPONENTS filesystem system REQUIRED)
   include_directories(${Boost_INCLUDE_DIRS}) 
   add_executable(okvis_app_synchronous okvis_apps/src/okvis_app_synchronous.cpp)
+  SET_TARGET_PROPERTIES(okvis_app_synchronous PROPERTIES COMPILE_FLAGS "-fopenmp")
   target_link_libraries(okvis_app_synchronous 
     okvis_util
     okvis_kinematics
@@ -341,7 +342,8 @@ if(BUILD_APPS)
     okvis_multisensor_processing
     pthread 
     ${Boost_LIBRARIES}
-    ${CXSPARSE_LIBRARIES}    
+    ${CXSPARSE_LIBRARIES}   
+     gomp cholmod blas lapack
   )
   if(${VISENSORDRIVER_FOUND})
     target_link_libraries(okvis_app_synchronous ${VISensorDriver_LIBRARY})
