@@ -32,7 +32,6 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${OPENGV_LIBRARY} 
   ${BRISK_LIBRARIES} 
-  ${OpenGV_LIBRARIES} 
   ${CERES_LIBRARIES}
   okvis_util
   okvis_cv 
