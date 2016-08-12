@@ -35,28 +35,3 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE ${CERES_LIBRARIES} 
   PRIVATE ${OpenCV_LIBRARIES} 
 )
-
-# testing
-if(BUILD_TESTS)
-  if(APPLE)
-    add_definitions(-DGTEST_HAS_TR1_TUPLE=1)
-  else()
-    add_definitions(-DGTEST_HAS_TR1_TUPLE=0)
-  endif(APPLE)
-  enable_testing()
-  set(PROJECT_TEST_NAME ${PROJECT_NAME}_test)
-  add_executable(${PROJECT_TEST_NAME}
-    test/test_main.cpp
-    test/TestEstimator.cpp
-    test/TestHomogeneousPointError.cpp
-    test/TestReprojectionError.cpp
-    test/TestImuError.cpp
-    test/TestMap.cpp
-    test/TestMarginalization.cpp
-  )
-  target_link_libraries(${PROJECT_TEST_NAME} 
-    ${PROJECT_NAME} 
-    ${GTEST_LIBRARY}  
-    pthread)
-  add_test(test ${PROJECT_TEST_NAME})
-endif()
