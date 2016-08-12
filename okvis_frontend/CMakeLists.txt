@@ -30,18 +30,12 @@ add_library(${PROJECT_NAME}
 
 # and link it                 
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE ${BRISK_LIBRARIES} 
-  PRIVATE ${OpenGV_LIBRARIES} 
-  PRIVATE ${CERES_LIBRARIES}
-  PUBLIC okvis_util
-  PUBLIC okvis_cv 
-  PUBLIC okvis_ceres 
-  PUBLIC okvis_timing 
-  PUBLIC okvis_matcher)
-
-# installation if required
-install(TARGETS ${PROJECT_NAME}
-  EXPORT okvisTargets 
-  ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-)
-install(DIRECTORY include/ DESTINATION ${INSTALL_INCLUDE_DIR} COMPONENT dev FILES_MATCHING PATTERN "*.hpp")
+  ${OPENGV_LIBRARY} 
+  ${BRISK_LIBRARIES} 
+  ${OpenGV_LIBRARIES} 
+  ${CERES_LIBRARIES}
+  okvis_util
+  okvis_cv 
+  okvis_ceres 
+  okvis_timing 
+  okvis_matcher)

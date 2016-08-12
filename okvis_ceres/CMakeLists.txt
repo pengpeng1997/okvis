@@ -36,13 +36,6 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE ${OpenCV_LIBRARIES} 
 )
 
-# installation if required
-install(TARGETS ${PROJECT_NAME}
-  EXPORT okvisTargets 
-  ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
-)
-install(DIRECTORY include/ DESTINATION ${INSTALL_INCLUDE_DIR} COMPONENT dev FILES_MATCHING PATTERN "*.hpp")
-
 # testing
 if(BUILD_TESTS)
   if(APPLE)
