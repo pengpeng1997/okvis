@@ -37,7 +37,7 @@ include_directories(BEFORE ${BRISK_INCLUDE_DIRS})
 
 
 # SuitesSparse
-find_package(SuiteSparse REQUIRED QUIET) #will be needed in any case...
+find_package(SuiteSparse REQUIRED) #will be needed in any case...
 find_package(CXSparse QUIET) #optional
 
 # ceres
@@ -94,13 +94,13 @@ add_dependencies(okvis_matcher okvis_util)
 
 include_directories(okvis_frontend/include)
 add_subdirectory(okvis_frontend)
-add_dependencies(okvis_frontend opengv okvis_util)
+add_dependencies(okvis_frontend okvis_util)
 
 include_directories(okvis_multisensor_processing/include)
 add_subdirectory(okvis_multisensor_processing)
 add_dependencies(okvis_multisensor_processing okvis_util)
 
-
+message(OPENGV_LIBRARY = ${OPENGV_LIBRARY})
 # merge everything in the same lib  
 add_library(okvis-original  
     okvis_util
@@ -119,7 +119,8 @@ target_link_libraries(okvis-original
     ${Boost_LIBRARIES}
     ${CXSPARSE_LIBRARIES}   
     ${OPENGV_LIBRARY}
-     gomp cholmod blas lapack
+    ${CHOLMOD_LIBRARY}
+     gomp  blas lapack
 )
 set_target_properties(okvis-original PROPERTIES LINKER_LANGUAGE CXX)
 
