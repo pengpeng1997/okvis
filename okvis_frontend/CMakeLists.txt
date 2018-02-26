@@ -38,3 +38,5 @@ target_link_libraries(${PROJECT_NAME}
   okvis_ceres 
   okvis_timing 
   okvis_matcher)
+  
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-fPIC")

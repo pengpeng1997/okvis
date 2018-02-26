@@ -11,3 +11,7 @@ ENDIF()
 add_library(${PROJECT_NAME}
   src/Time.cpp
   src/Duration.cpp)
+
+
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-fPIC")
+  

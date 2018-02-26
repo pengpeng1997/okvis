@@ -644,6 +644,16 @@ void ThreadedKFVio::visualizationLoop() {
 }
 
 // trigger display (needed because OSX won't allow threaded display)
+
+void ThreadedKFVio::get_cameras(std::vector<cv::Mat>& out_images) {
+
+  if (displayImages_.Size() == 0)
+	return;
+  if (displayImages_.PopBlocking(&out_images) == false)
+    return;
+}
+
+
 void ThreadedKFVio::display() {
   std::vector<cv::Mat> out_images;
   if (displayImages_.Size() == 0)

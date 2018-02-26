@@ -234,6 +234,7 @@ class ThreadedKFVio : public VioInterface {
 
   /// \brief Trigger display (needed because OSX won't allow threaded display).
   void display();
+  void get_cameras(std::vector<cv::Mat>& out_images);
 
  private:
   /// \brief Start all threads.

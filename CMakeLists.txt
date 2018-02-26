@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -std=gnu++11 -O3")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations ") # Eigen raises deprecated declarations warning.
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -O3")
+  
+  
 if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm*")
   message(STATUS "ARM processor detected, will attempt to use NEON.")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=neon")
@@ -10,57 +14,34 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mssse3")
 endif()
 
-get_directory_property(defs COMPILE_DEFINITIONS)
 
-#list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-include_directories(${CMAKE_BINARY_DIR}/include)
-link_directories(${CMAKE_BINARY_DIR}/lib)
-
-# require Eigen
+find_package(Eigen3   REQUIRED)
 find_package( Eigen REQUIRED )
-include_directories(${EIGEN_INCLUDE_DIR}) 
-
-
-
 FIND_PACKAGE(Boost COMPONENTS filesystem system REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS}) 
-
-
-
-# glog
 find_package(Glog REQUIRED)
-include_directories(BEFORE ${GLOG_INCLUDE_DIRS}) 
-
-# brisk
 find_package( brisk 2 REQUIRED )
-include_directories(BEFORE ${BRISK_INCLUDE_DIRS})
-
-
-# SuitesSparse
 find_package(SuiteSparse REQUIRED) #will be needed in any case...
 find_package(CXSparse QUIET) #optional
-
-# ceres
 find_package( Ceres 1.9 REQUIRED )
-include_directories(BEFORE ${CERES_INCLUDE_DIRS})
-
-# OpenMP
 find_package(OpenMP REQUIRED)
-if (OPENMP_FOUND)
-  message(STATUS "OpenMP found")
-  add_definitions(-DUSE_OPENMP)
-else ()
-  message(STATUS "OpenMP NOT found")
-endif ()
-
-#OpenCV
 find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
 
-#set(OpenGV_LIBRARIES opengv)
-#set_target_properties(opengv PROPERTIES IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libopengv.a)
-#add_dependencies(${OpenGV_LIBRARIES} opengv_external)
+add_definitions(-DUSE_OPENMP)
+
+include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${CMAKE_BINARY_DIR}/include)
+include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS}) 
+include_directories(${EIGEN_INCLUDE_DIR}) 
+include_directories(BEFORE ${GLOG_INCLUDE_DIRS}) 
+include_directories(BEFORE ${BRISK_INCLUDE_DIRS})
+include_directories(${CERES_INCLUDE_PATH})
+
 include_directories(${OPENGV_INCLUDE_DIR}) 
+
+include_directories(${CHOLMOD_INCLUDE_DIR})
+
+
 
 # BUILD LOCAL DEPENDENCIES
 include_directories(okvis_util/include)
@@ -76,14 +57,14 @@ add_dependencies(okvis_time okvis_util)
 
 include_directories(okvis_cv/include)
 add_subdirectory(okvis_cv)
-add_dependencies(okvis_cv brisk okvis_util)
+add_dependencies(okvis_cv okvis_util)
 
 include_directories(okvis_common/include)
 add_subdirectory(okvis_common)
 
 include_directories(okvis_ceres/include)
 add_subdirectory(okvis_ceres)
-add_dependencies(okvis_ceres ceres okvis_util)
+add_dependencies(okvis_ceres okvis_util)
 
 include_directories(okvis_timing/include)
 add_subdirectory(okvis_timing)
@@ -100,37 +81,33 @@ include_directories(okvis_multisensor_processing/include)
 add_subdirectory(okvis_multisensor_processing)
 add_dependencies(okvis_multisensor_processing okvis_util)
 
-message(OPENGV_LIBRARY = ${OPENGV_LIBRARY})
-# merge everything in the same lib  
-add_library(okvis-original  
-    okvis_util
-    okvis_kinematics
-    okvis_time
-    okvis_cv 
-    okvis_common
-    okvis_ceres
-    okvis_timing
-    okvis_matcher
-    okvis_frontend 
-    okvis_multisensor_processing
-)
-target_link_libraries(okvis-original
-    pthread 
-    ${Boost_LIBRARIES}
-    ${CXSPARSE_LIBRARIES}   
-    ${OPENGV_LIBRARY}
-    ${CHOLMOD_LIBRARY}
-     gomp  blas lapack
-)
-set_target_properties(okvis-original PROPERTIES LINKER_LANGUAGE CXX)
 
+set(DEPS ${CERES_LIBRARIES} blas lapack gomp ${SUITESPARSE_LIBRARIES} ${Eigen_LIBS} ${GLOG_LIBRARY})
+
+
+
+
+add_library(okvis-original  okvis_library.cpp)
+target_link_libraries(okvis-original ${common_libraries}
+  pthread
+  okvis_util
+  okvis_kinematics
+  okvis_time
+  okvis_cv 
+  okvis_common
+  okvis_ceres
+  okvis_timing
+  okvis_matcher
+  okvis_frontend 
+  okvis_multisensor_processing
+  ${Boost_LIBRARIES}
+  ${DEPS}
+  )
   
-add_slambench_binary(okvis  main         original "" "-fopenmp" "-fopenmp;${GLOG_LIBRARY};okvis_common;okvis_multisensor_processing")    
-  
-  
-  
-  # :${OpenCV_LIBRARIES}:/home/toky/work/pamela/slambench2/deps/opengv/lib/libopengv.a::
-  
-  
-  
+set_target_properties(okvis-original PROPERTIES LINKER_LANGUAGE CXX)
+SET_TARGET_PROPERTIES(okvis-original PROPERTIES COMPILE_FLAGS "-fPIC -fopenmp")
+
+
+generate_slam_library(okvis-original "-lgomp -fopenmp" )
+
   

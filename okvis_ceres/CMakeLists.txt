@@ -26,7 +26,7 @@ add_library(${PROJECT_NAME}
   include/okvis/ceres/CeresIterationCallback.hpp
 )
 
-message("OKVIS CERES *************** CERES_LIBRARIES = ${CERES_LIBRARIES} ")
+message(STATUS "OKVIS: CERES_LIBRARIES = ${CERES_LIBRARIES} ")
 # and link it
 target_link_libraries(${PROJECT_NAME} 
   PUBLIC okvis_util
@@ -35,3 +35,5 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE ${CERES_LIBRARIES} 
   PRIVATE ${OpenCV_LIBRARIES} 
 )
+
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-fPIC")

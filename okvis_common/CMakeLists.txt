@@ -30,3 +30,5 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC okvis_kinematics 
   PUBLIC okvis_time 
   PUBLIC okvis_cv)
+  
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-fPIC")

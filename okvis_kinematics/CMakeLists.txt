@@ -13,3 +13,6 @@ add_library(${PROJECT_NAME} STATIC src/dependency-tracker.cc)
 target_link_libraries(${PROJECT_NAME} 
   PUBLIC okvis_util
 )
+
+
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-fPIC")
