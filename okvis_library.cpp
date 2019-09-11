@@ -18,6 +18,8 @@
 #include <io/sensor/CameraSensor.h>
 #include <io/sensor/CameraSensorFinder.h>
 #include <io/sensor/IMUSensor.h>
+#include <io/sensor/AccelerometerSensor.h>
+#include <io/sensor/GyroSensor.h>
 #include "io/SLAMFrame.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -45,6 +47,8 @@
 static slambench::io::CameraSensor *grey_sensor_one = nullptr;
 static slambench::io::CameraSensor *grey_sensor_two = nullptr;
 static slambench::io::IMUSensor *IMU_sensor = nullptr;
+static slambench::io::AccelerometerSensor *Acc_sensor = nullptr;
+static slambench::io::GyroSensor *Gyro_sensor = nullptr;
 
 
 //=========================================================================
@@ -235,9 +239,19 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings) {
 	img_one = new cv::Mat ( grey_sensor_one->Height ,  grey_sensor_one->Width, CV_8UC1);
 	img_two = new cv::Mat ( grey_sensor_two->Height ,  grey_sensor_two->Width, CV_8UC1);
 
-	IMU_sensor = (slambench::io::IMUSensor*)slam_settings->get_sensors().GetSensor(slambench::io::IMUSensor::kIMUType);
-	if(IMU_sensor == nullptr) {
-		std::cout << "Init failed, did not found IMU." << std::endl;
+	// IMU_sensor = (slambench::io::IMUSensor*)slam_settings->get_sensors().GetSensor(slambench::io::IMUSensor::kIMUType);
+	// if(IMU_sensor == nullptr) {
+	// 	std::cout << "Init failed, did not found IMU." << std::endl;
+	// 	return false;
+	// }
+	Acc_sensor = (slambench::io::AccelerometerSensor*)slam_settings->get_sensors().GetSensor(slambench::io::AccelerometerSensor::kAccType);
+	if(Acc_sensor == nullptr) {
+		std::cout << "Init failed, did not found Accelerometer." << std::endl;
+		return false;
+	}
+	Gyro_sensor = (slambench::io::GyroSensor*)slam_settings->get_sensors().GetSensor(slambench::io::GyroSensor::kGyroType);
+	if(Gyro_sensor == nullptr) {
+		std::cout << "Init failed, did not found Gyroscope." << std::endl;
 		return false;
 	}
 
@@ -271,8 +285,8 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings) {
 
 
 
-	okvis::kinematics::Transformation T_BS = okvis::kinematics::Transformation(IMU_sensor->Pose.cast<double>()); //  # tranform Body-Sensor (IMU)
-
+	// okvis::kinematics::Transformation T_BS = okvis::kinematics::Transformation(IMU_sensor->Pose.cast<double>()); //  # tranform Body-Sensor (IMU)
+	okvis::kinematics::Transformation T_BS = okvis::kinematics::Transformation(Acc_sensor->Pose.cast<double>());
 
 
 
@@ -280,22 +294,23 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings) {
 	//------------------------------------------------------
 
 
-	parameters.imu.sigma_g_c  = IMU_sensor->GyroscopeNoiseDensity;
-	parameters.imu.sigma_gw_c = IMU_sensor->GyroscopeDriftNoiseDensity;
-	parameters.imu.sigma_bg  = IMU_sensor->GyroscopeBiasDiffusion;
-	parameters.imu.g_max  = IMU_sensor->GyroscopeSaturation;
+	parameters.imu.sigma_g_c  = 12.0e-4;
+	parameters.imu.sigma_gw_c = 12.0e-4;
+	parameters.imu.sigma_bg  = 12.0e-4;
+	parameters.imu.g_max  = 7.8;
 
-	parameters.imu.sigma_a_c  = IMU_sensor->AcceleratorNoiseDensity;
-	parameters.imu.sigma_aw_c  = IMU_sensor->AcceleratorDriftNoiseDensity;
-	parameters.imu.sigma_ba  = IMU_sensor->AcceleratorBiasDiffusion;
-	parameters.imu.a_max  =IMU_sensor->AcceleratorSaturation;
+	parameters.imu.sigma_a_c  = 12.0e-4;
+	parameters.imu.sigma_aw_c  = 12.0e-4;
+	parameters.imu.sigma_ba  = 12.0e-4;
+	parameters.imu.a_max  = 176.0;
 
 
 	parameters.imu.tau  = tau;
 	parameters.imu.g  = g;
 	parameters.imu.a0  = a0;
 
-	parameters.imu.rate = IMU_sensor->Rate;
+	// parameters.imu.rate = IMU_sensor->Rate;
+	parameters.imu.rate = Gyro_sensor->Rate < Acc_sensor->Rate ? Gyro_sensor->Rate : Acc_sensor->Rate;
 	parameters.imu.T_BS = T_BS;
 
 	///< ************** Wind parameters.
@@ -357,7 +372,7 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings) {
 
 		if (sensor->DistortionType != slambench::io::CameraSensor::distortion_type_t::RadialTangential) {
 			std::cerr << "Unsupported sensor with no distortion" << std::endl;
-			exit(1);
+			// exit(1);
 		}
 
 		Eigen::Vector4f CAM_distortionCoefficients = { sensor->RadialTangentialDistortion[0],
@@ -452,9 +467,11 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings) {
 	//=========================================================================
 
 
-	return (grey_sensor_one && grey_sensor_two && IMU_sensor);
+	// return (grey_sensor_one && grey_sensor_two && IMU_sensor);
+	return (grey_sensor_one && grey_sensor_two && Acc_sensor && Gyro_sensor);
 }
 
+bool acc_ready = false;
 
 bool sb_update_frame (SLAMBenchLibraryHelper * slam_settings, slambench::io::SLAMFrame* s) {
 
@@ -464,7 +481,7 @@ bool sb_update_frame (SLAMBenchLibraryHelper * slam_settings, slambench::io::SLA
 	//=====================
 
 
-	if (s->FrameSensor->GetType() != slambench::io::CameraSensor::kCameraType and s->FrameSensor->GetType() != slambench::io::IMUSensor::kIMUType) {
+	if (s->FrameSensor->GetType() != slambench::io::CameraSensor::kCameraType and s->FrameSensor->GetType() != slambench::io::AccelerometerSensor::kAccType and s->FrameSensor->GetType() != slambench::io::GyroSensor::kGyroType) {
 		// Skip Unsupported Frames
 		return false;
 	}
@@ -528,13 +545,30 @@ bool sb_update_frame (SLAMBenchLibraryHelper * slam_settings, slambench::io::SLA
 	// GET IMU
 	//=====================
 
-	if(s->FrameSensor == IMU_sensor) {
+	// if(s->FrameSensor == IMU_sensor) {
+
+	// 	float* frame_data = (float*)s->GetData();
+	// 	gyr_data.push_back(Eigen::Vector3d(frame_data[0],frame_data[1],frame_data[2]));
+	// 	acc_data.push_back(Eigen::Vector3d(frame_data[3],frame_data[4],frame_data[5]));
+	// 	tim_data.push_back (okvis::Time(s->Timestamp.S, s->Timestamp.Ns));
+
+	// }
+	if(!acc_ready && s->FrameSensor == Acc_sensor) {
+
+		float* frame_data = (float*)s->GetData();
+		acc_data.push_back(Eigen::Vector3d(frame_data[0],frame_data[1],frame_data[2]));
+		tim_data.push_back (okvis::Time(s->Timestamp.S, s->Timestamp.Ns));
+		acc_ready = true;
+		// std::cout<<"acc sensor:"<<s->Timestamp<<" "<<acc_ready<<std::endl;
+	}
+
+	if(acc_ready && s->FrameSensor == Gyro_sensor) {
 
 		float* frame_data = (float*)s->GetData();
 		gyr_data.push_back(Eigen::Vector3d(frame_data[0],frame_data[1],frame_data[2]));
-		acc_data.push_back(Eigen::Vector3d(frame_data[3],frame_data[4],frame_data[5]));
 		tim_data.push_back (okvis::Time(s->Timestamp.S, s->Timestamp.Ns));
-
+		acc_ready = false;
+		// std::cout<<"gyro sensor:"<<s->Timestamp<<" "<<acc_ready<<std::endl;
 	}
 
 	return two_ok && one_ok;
