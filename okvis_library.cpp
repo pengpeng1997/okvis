@@ -557,6 +557,7 @@ bool sb_update_frame (SLAMBenchLibraryHelper * slam_settings, slambench::io::SLA
 
 		float* frame_data = (float*)s->GetData();
 		acc_data.push_back(Eigen::Vector3d(frame_data[0],frame_data[1],frame_data[2]));
+		// std::cout<<"acc_data:"<<frame_data[0]<<","<<frame_data[1]<<","<<frame_data[2]<<std::endl;
 		tim_data.push_back (okvis::Time(s->Timestamp.S, s->Timestamp.Ns));
 		acc_ready = true;
 		// std::cout<<"acc sensor:"<<s->Timestamp<<" "<<acc_ready<<std::endl;
@@ -566,7 +567,7 @@ bool sb_update_frame (SLAMBenchLibraryHelper * slam_settings, slambench::io::SLA
 
 		float* frame_data = (float*)s->GetData();
 		gyr_data.push_back(Eigen::Vector3d(frame_data[0],frame_data[1],frame_data[2]));
-		tim_data.push_back (okvis::Time(s->Timestamp.S, s->Timestamp.Ns));
+		// std::cout<<"gyr_data:"<<frame_data[0]<<","<<frame_data[1]<<","<<frame_data[2]<<std::endl;
 		acc_ready = false;
 		// std::cout<<"gyro sensor:"<<s->Timestamp<<" "<<acc_ready<<std::endl;
 	}
@@ -578,6 +579,12 @@ bool sb_update_frame (SLAMBenchLibraryHelper * slam_settings, slambench::io::SLA
 bool sb_process_once (SLAMBenchLibraryHelper * slam_settings) {
 
 	// First Trail of IMU before Image One
+	if(gyr_data.size() > acc_data.size()) {
+		gyr_data.pop_back();
+	} else if (gyr_data.size() < acc_data.size()) {
+		acc_data.pop_back();
+		tim_data.pop_back();
+	}
 
 	for (int i =0;i<tim_data.size();i++) {
 
