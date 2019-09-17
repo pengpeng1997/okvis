@@ -294,15 +294,15 @@ bool sb_init_slam_system(SLAMBenchLibraryHelper * slam_settings) {
 	//------------------------------------------------------
 
 
-	parameters.imu.sigma_g_c  = 12.0e-4;
-	parameters.imu.sigma_gw_c = 12.0e-4;
-	parameters.imu.sigma_bg  = 12.0e-4;
-	parameters.imu.g_max  = 7.8;
+        parameters.imu.sigma_g_c  = 0.000227;//1.6968e-04     # [ rad / s / sqrt(Hz) ]
+        parameters.imu.sigma_gw_c = 4.0e-6;//4.0e-6
+        parameters.imu.sigma_bg  = 2e-4;//1.9393e-05       # [ rad / s^2 / sqrt(Hz) ]
+        parameters.imu.g_max  = 7.8;//7.8
 
-	parameters.imu.sigma_a_c  = 12.0e-4;
-	parameters.imu.sigma_aw_c  = 12.0e-4;
-	parameters.imu.sigma_ba  = 12.0e-4;
-	parameters.imu.a_max  = 176.0;
+        parameters.imu.sigma_a_c  = 0.00146;//2.0000e-3  # [ m / s^2 / sqrt(Hz) ]
+        parameters.imu.sigma_aw_c  = 4.0e-5;//4.0e-5
+        parameters.imu.sigma_ba  = 3.0e-3;//3.0000e-3    # [ m / s^3 / sqrt(Hz) ]
+        parameters.imu.a_max  = 176.0;//176.0
 
 
 	parameters.imu.tau  = tau;
